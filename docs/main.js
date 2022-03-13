@@ -31,7 +31,7 @@ window.addEventListener('resize', ()=>{
 
 let speed = 0.2
 let X = 0
-let Y = 10
+let Y = 15
 let cellSize = 30
 let g = 0.02
 let VY = 0
@@ -108,11 +108,16 @@ const loop =()=>{
 	Y += VY
 
 	//gravitacja
-	if((getT(lx, dy) || getT(rx, dy)) && (Math.abs(Y-Math.floor(Y)<0.1 || (getT(lx, my) || getT(rx, my))))){
+	if(!(!getT(lx, dy) && !getT(rx, dy)) && Math.abs(Y-Math.floor(Y))<0.2){
 		VY = 0
 		Y = Math.floor(Y)
 	}else{
 		VY -= g
+	}
+
+	//na wierzch jeśli w bloku
+	if(!(!getT(lx, my) && !getT(rx, my))){
+		Y += 1
 	}
 
 	for(const i in events){
