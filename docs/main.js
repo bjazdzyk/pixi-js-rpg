@@ -3,6 +3,12 @@ const canvas = document.getElementById("myCanvas")
 let _W = window.innerWidth
 let _H = window.innerHeight
 
+
+const strcoords =(x, y)=>{
+	return `${x}:${y}`
+}
+
+
 PIXI.settings.RESOLUTION = window.devicePixelRatio;
 PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 
@@ -22,7 +28,31 @@ window.addEventListener('resize', ()=>{
 	app.renderer.resize(_W, _H)
 })
 
+
 let speed = 3
+let X = 0
+let Y = 0
+let cellSize = 30
+
+let Terrain = {}
+
+
+const terrain = new PIXI.Graphics()
+terrain.beginFill(0x00ff00)
+
+noise.seed(Math.random())
+for(let i=-20; i<=20; i++){
+	const s = noise.simplex2(i/30, 0)
+	const x = Math.floor(s*3)
+	for(let j=-10; j<=x; j++){
+		Terrain[strcoords(i, j)] = 1
+		terrain.drawRect(i*cellSize, j*cellSize*-1, cellSize, cellSize)
+	}
+}
+app.stage.addChild(terrain)
+terrain.x = _W/2
+terrain.y = _H/2
+
 
 const playerTexture = PIXI.Texture.from("assets/player.png")
 const player = new PIXI.Sprite(playerTexture)
@@ -30,7 +60,7 @@ const player = new PIXI.Sprite(playerTexture)
 player.width = 60
 player.height = 60
 player.anchor.set(0.5)
-player.position.set(_W/2, _H/2)
+player.position.set(_W/2+X*cellSize, _H/2+Y*cellSize*-1)
 
 app.stage.addChild(player)
 
