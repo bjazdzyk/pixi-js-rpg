@@ -2,5 +2,5 @@
 
 ## Controls
 
-Right/left arrow - move
+Right/left arrow - move\
 z - jump
