@@ -47,8 +47,8 @@ const terrain = new PIXI.Graphics()
 terrain.beginFill(0x00ff00)
 
 noise.seed(Math.random())
-for(let i=-20; i<20; i++){
-	const s = noise.simplex2(i/30, 0)
+for(let i=-100; i<100; i++){
+	const s = noise.simplex2(i*30, 0)
 	const x = Math.floor(s*3)
 	for(let j=-10; j<=x; j++){
 		Terrain[strcoords(i, j)] = 1
@@ -73,12 +73,24 @@ app.stage.addChild(player)
 const keys = {}
 const events = {
 	ArrowLeft(){
-		X -= speed
+		const colLx = Math.floor(X-0.5-speed)
+		const dy = Math.floor(Y)
+		const my = Math.floor(Y+1)
+		const uy = Math.floor(Y+2)
 		player.scale.x *= Math.abs(player.scale.x)/player.scale.x*-1
+		if(!getT(colLx, uy) && !getT(colLx, my)){
+			X -= speed
+		}
 	},
 	ArrowRight(){
-		X += speed
+		const colRx = Math.floor(X+0.5+speed)
+		const dy = Math.floor(Y)
+		const my = Math.floor(Y+1)
+		const uy = Math.floor(Y+2)
 		player.scale.x *= Math.abs(player.scale.x)/player.scale.x
+		if(!getT(colRx, uy) && !getT(colRx, my)){
+			X += speed
+		}
 	}
 }
 
@@ -98,14 +110,13 @@ const loop =()=>{
 	player.x = _W/2
 	player.y = _H/2 - Y*cellSize
 
+	Y += VY
 
 	const lx = Math.floor(X-0.5)
 	const rx = Math.floor(X+0.5)
 	const dy = Math.floor(Y)
 	const my = Math.floor(Y+1)
-	const uy = Math.floor(Y-2)
-	
-	Y += VY
+	const uy = Math.floor(Y+2)
 
 	//gravitacja
 	if(!(!getT(lx, dy) && !getT(rx, dy)) && Math.abs(Y-Math.floor(Y))<0.2){
