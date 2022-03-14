@@ -28,12 +28,14 @@ window.addEventListener('resize', ()=>{
 	app.renderer.resize(_W, _H)
 })
 
-
-let speed = 0.2
-let X = 0
-let Y = 15
 let cellSize = 30
+
 let g = 0.02
+let jumpForce = 0.3
+let speed = 0.2
+
+let X = 0
+let Y = 5
 let VY = 0
 
 let Terrain = {}
@@ -47,8 +49,8 @@ const terrain = new PIXI.Graphics()
 terrain.beginFill(0x00ff00)
 
 noise.seed(Math.random())
-for(let i=-100; i<100; i++){
-	const s = noise.simplex2(i*30, 0)
+for(let i=-500; i<500; i++){
+	const s = noise.simplex2(i/30, 0)
 	const x = Math.floor(s*3)
 	for(let j=-10; j<=x; j++){
 		Terrain[strcoords(i, j)] = 1
@@ -71,25 +73,27 @@ player.position.set(_W/2+X*cellSize, _H/2-Y*cellSize)
 app.stage.addChild(player)
 
 const keys = {}
+
+let lx, rx, dy, my, uy, colLx, colRx
+
 const events = {
 	ArrowLeft(){
-		const colLx = Math.floor(X-0.5-speed)
-		const dy = Math.floor(Y)
-		const my = Math.floor(Y+1)
-		const uy = Math.floor(Y+2)
 		player.scale.x *= Math.abs(player.scale.x)/player.scale.x*-1
 		if(!getT(colLx, uy) && !getT(colLx, my)){
 			X -= speed
 		}
 	},
 	ArrowRight(){
-		const colRx = Math.floor(X+0.5+speed)
-		const dy = Math.floor(Y)
-		const my = Math.floor(Y+1)
-		const uy = Math.floor(Y+2)
 		player.scale.x *= Math.abs(player.scale.x)/player.scale.x
 		if(!getT(colRx, uy) && !getT(colRx, my)){
 			X += speed
+		}
+	},
+	KeyZ(){
+		if(getT(lx, dy) || getT(rx, dy)){
+			if(VY == 0){
+				VY = jumpForce
+			}
 		}
 	}
 }
@@ -102,6 +106,7 @@ window.addEventListener('keyup', (e)=>{
 })
 
 const loop =()=>{
+	//console.log(Y, VY)
 	requestAnimationFrame(loop)
 	_W = window.innerWidth
 	_H = window.innerHeight
@@ -112,14 +117,16 @@ const loop =()=>{
 
 	Y += VY
 
-	const lx = Math.floor(X-0.5)
-	const rx = Math.floor(X+0.5)
-	const dy = Math.floor(Y)
-	const my = Math.floor(Y+1)
-	const uy = Math.floor(Y+2)
+	lx = Math.floor(X-0.5)
+	rx = Math.floor(X+0.5)
+	dy = Math.floor(Y)
+	my = Math.floor(Y+1)
+	uy = Math.floor(Y+2)
+	colLx = Math.floor(X-0.5-speed)
+	colRx = Math.floor(X+0.5+speed)
 
 	//gravitacja
-	if(!(!getT(lx, dy) && !getT(rx, dy)) && Math.abs(Y-Math.floor(Y))<0.2){
+	if(!(!getT(lx, dy) && !getT(rx, dy)) && Math.abs(Y-Math.floor(Y))<0.1){
 		VY = 0
 		Y = Math.floor(Y)
 	}else{
@@ -128,7 +135,9 @@ const loop =()=>{
 
 	//na wierzch jeśli w bloku
 	if(!(!getT(lx, my) && !getT(rx, my))){
-		Y += 1
+		console.log(Y, Y-Math.floor(Y+1))
+		Y += Math.abs(Y-Math.floor(Y+1))
+		VY = 0
 	}
 
 	for(const i in events){
