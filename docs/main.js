@@ -28,15 +28,7 @@ window.addEventListener('resize', ()=>{
 	app.renderer.resize(_W, _H)
 })
 
-let cellSize = 30
-
-let g = 0.02
-let jumpForce = 0.3
-let speed = 0.2
-
-let X = 0
-let Y = 5
-let VY = 0
+let cellSize = 6
 
 let Terrain = {}
 
@@ -46,56 +38,35 @@ const getT = (x, y) =>{
 
 
 const terrain = new PIXI.Graphics()
-terrain.beginFill(0x00ff00)
 
 noise.seed(Math.random())
-for(let i=-500; i<500; i++){
-	const s = noise.simplex2(i/30, 0)
-	const x = Math.floor(s*3)
-	for(let j=-10; j<=x; j++){
-		Terrain[strcoords(i, j)] = 1
-		terrain.drawRect(i*cellSize, j*cellSize*-1, cellSize, cellSize)
-	}
+for(let i=-400; i<400; i++){
+	const s = noise.simplex2(i/300, 0) // -1 <-> 1
+	const x = s*50
+	console.log(x)
+
+	Terrain[i] = x*cellSize
+
+	terrain.lineStyle(cellSize, 0x000000)
+	terrain.moveTo(i*cellSize, x*cellSize)
+	terrain.lineTo(i*cellSize, x*cellSize+Math.floor(cellSize/2+1))
+	terrain.lineStyle(cellSize, 0x00ff00)
+	terrain.moveTo(i*cellSize, x*cellSize+Math.floor(cellSize/2+1))
+	terrain.lineTo(i*cellSize, x*cellSize+1000)
 }
 app.stage.addChild(terrain)
 terrain.x = _W/2
 terrain.y = _H/2
 
-
-const playerTexture = PIXI.Texture.from("assets/player.png")
-const player = new PIXI.Sprite(playerTexture)
-
-player.width = 60
-player.height = 60
-player.anchor.set(0.5, 1)
-player.position.set(_W/2+X*cellSize, _H/2-Y*cellSize)
-
-app.stage.addChild(player)
-
 const keys = {}
 
-let lx, rx, dy, my, uy, colLx, colRx
-
 const events = {
-	ArrowLeft(){
-		player.scale.x *= Math.abs(player.scale.x)/player.scale.x*-1
-		if(!getT(colLx, uy) && !getT(colLx, my)){
-			X -= speed
-		}
-	},
-	ArrowRight(){
-		player.scale.x *= Math.abs(player.scale.x)/player.scale.x
-		if(!getT(colRx, uy) && !getT(colRx, my)){
-			X += speed
-		}
-	},
-	KeyZ(){
-		if(getT(lx, dy) || getT(rx, dy)){
-			if(VY == 0){
-				VY = jumpForce
-			}
-		}
-	}
+	// ArrowLeft(){
+	// 	player.scale.x *= Math.abs(player.scale.x)/player.scale.x*-1
+	// 	if(!getT(colLx, uy) && !getT(colLx, my)){
+	// 		X -= speed
+	// 	}
+	// }
 }
 
 window.addEventListener('keydown', (e)=>{
@@ -106,40 +77,11 @@ window.addEventListener('keyup', (e)=>{
 })
 
 const loop =()=>{
-	//console.log(Y, VY)
 	requestAnimationFrame(loop)
 	_W = window.innerWidth
 	_H = window.innerHeight
 
-	terrain.x = _W/2 - X*cellSize
-	player.x = _W/2
-	player.y = _H/2 - Y*cellSize
-
-	Y += VY
-
-	lx = Math.floor(X-0.5)
-	rx = Math.floor(X+0.5)
-	dy = Math.floor(Y)
-	my = Math.floor(Y+1)
-	uy = Math.floor(Y+2)
-	colLx = Math.floor(X-0.5-speed)
-	colRx = Math.floor(X+0.5+speed)
-
-	//gravitacja
-	if(!(!getT(lx, dy) && !getT(rx, dy)) && Math.abs(Y-Math.floor(Y))<0.1){
-		VY = 0
-		Y = Math.floor(Y)
-	}else{
-		VY -= g
-	}
-
-	//na wierzch jeśli w bloku
-	if(!(!getT(lx, my) && !getT(rx, my))){
-		console.log(Y, Y-Math.floor(Y+1))
-		Y += Math.abs(Y-Math.floor(Y+1))
-		VY = 0
-	}
-
+	terrain.x = _W/2
 	for(const i in events){
 		if(keys[i]){
 			events[i]()
